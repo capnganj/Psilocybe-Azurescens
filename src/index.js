@@ -159,7 +159,7 @@ function initPostprocessing() {
   const renderPass = new RenderPass( scene, camera);
   //halftone
   const params = {
-    shape: 1, 
+    shape: 3, 
     radius: feet.pattern.sizeVal,
     rotateR: feet.pattern.anglesVals.r , // all could be features...
     rotateB: feet.pattern.anglesVals.g,
