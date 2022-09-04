@@ -1,2 +1,2 @@
-# fxhash-CensoredMushrooms
-These psychedelic fungi have been censored on @fxhash
+# fxhash-HatchedMushrooms
+These psychedelic fungi have been hatched out on @fxhash
