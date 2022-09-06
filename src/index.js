@@ -24,7 +24,8 @@ window.$fxhashFeatures = {
    "Pattern Size" : feet.pattern.sizeTag,
    "Pattern" : feet.pattern.anglesTag,
    "Sunlight" : feet.lightsAndCamera.lightsTag,
-   "Camera": feet.lightsAndCamera.cameraTag
+   "Camera": feet.lightsAndCamera.cameraTag,
+   "Number": feet.numShrooms.toString()
 };
 console.log(window.$fxhashFeatures);
 //console.log(feet);
@@ -48,16 +49,17 @@ let loaded = false;
 
 
 //global vars 
-let controls, renderer, scene, camera, skullObj, animateSkull;
+let controls, renderer, scene, camera, firstAnimate;
 let postprocessing = {selectedObjects: []}
 init();
 
 function init() {
   //scene & camera
   scene = new THREE.Scene();
-  const sCol = new THREE.Color(1,1,1);
+  const sCol = new THREE.Color(0.62,0.62,0.62);
   scene.background = sCol;
-  //scene.fog = new THREE.Fog(sCol, 5, 26)
+  //scene.background
+  scene.fog = new THREE.Fog(sCol, 20, 60)
 
   renderer = new THREE.WebGLRenderer( { 
     antialias: true,
@@ -70,52 +72,48 @@ function init() {
   renderer.setSize( w.w, w.h );
   renderer.shadowMap.enabled = true;
   renderer.domElement.id = "hashish";
-  //renderer.domElement.style.backgroundColor = feet.background.value
-  document.body.style.backgroundColor = feet.background.value
-  document.body.style.display = 'flex';
-  document.body.style.justifyContent = 'center';
+  document.body.style.backgroundColor = feet.background
+  document.body.style.display = 'flex'
+  document.body.style.justifyContent = 'center'
   document.body.style.alignItems = 'center'
   renderer.domElement.style.paddingTop = w.topPadding.toString() + 'px'
   document.body.appendChild( renderer.domElement );
 
   //camera and orbit controls
   camera = new THREE.PerspectiveCamera( 60, w.w / w.h, 0.01, 100 );
-  camera.position.set( feet.lightsAndCamera.cameraVal.x, feet.lightsAndCamera.cameraVal.y, 32 );
+  camera.position.set( feet.lightsAndCamera.cameraVal.x, feet.lightsAndCamera.cameraVal.y, 34 );
 
   // controls
   controls = new OrbitControls( camera, renderer.domElement );
   controls.target = new THREE.Vector3(0, 3, 0)
   controls.enableDamping =true;
   controls.dampingFactor = 0.2;
-  controls.autoRotateSpeed = 1.0;
+  controls.autoRotateSpeed = 1;
   controls.maxDistance = 50;
   controls.minDistance = 18;
 
   //lights
   const p1 = new THREE.DirectionalLight( );
-  //p1.color = new THREE.Color(1,1,0)
   p1.intensity = 0.6
-  p1.position.set( feet.lightsAndCamera.lightsVal, 15, 15);
+  p1.position.set( feet.lightsAndCamera.lightsVal, 30, 15);
   p1.castShadow = true;
   p1.shadow.mapSize.width = 2048;
   p1.shadow.mapSize.height = 2048;
-  const d = 15;
+  const d = 90;
   p1.shadow.camera.left = -d;
   p1.shadow.camera.right = d;
   p1.shadow.camera.top = d;
   p1.shadow.camera.bottom = -d;
+  p1.shadow.camera.near = 1
   p1.shadow.camera.far = 1000;
   scene.add(p1);
-  
-  const amb = new THREE.AmbientLight( 0xffffff, 0.4);
-  //scene.add(amb);
 
 
   //geometry and materials
 
   //toon material 
   const format = ( renderer.capabilities.isWebGL2 ) ? THREE.RedFormat : THREE.LuminanceFormat;
-  const colors = new Uint8Array(5);
+  const colors = new Uint8Array(15);
   for (let c = 0; c < colors.length; c++) {
     colors[c] = (c/colors.length) * 256;
   }
@@ -127,15 +125,75 @@ function init() {
   });
 
   //single mushroom geometry
-  let mH = feet.map(fxrand(), 0, 1, 10, 20);
-  let mW = feet.map(fxrand(), 0, 1, 10, 15)
-  let gHF = feet.map(fxrand(), 0, 1, 0.15, 0.3)
-  let gDF = feet.map(fxrand(), 0, 1, 0.1, 0.75)      
-  const c = new MushroomCap(mW, mH, gHF, gDF, feet)
-  const meshMat = new THREE.MeshStandardMaterial();
-  const mesh = new THREE.Mesh(c.mergedBufferGeometry, toon)
-  scene.add(mesh);
-  skullObj = mesh;
+  if (feet.numShrooms == 1) {
+	  let mH = feet.map(fxrand(), 0, 1, 10, 19);
+	  let mW = feet.map(fxrand(), 0, 1, 10, 15)
+	  let gHF = feet.map(fxrand(), 0, 1, 0.15, 0.3)
+	  let gDF = feet.map(fxrand(), 0, 1, 0.1, 0.75)      
+	  const c = new MushroomCap(mW, mH, gHF, gDF, feet)
+	  const mesh = new THREE.Mesh(c.mergedBufferGeometry, toon)
+    //mesh.castShadow = true;
+
+    //nudges off center
+    const n = fxrand()
+    if (n < 0.37) {
+      mesh.position.set(feet.map(fxrand(), 0, 1, -2, -4), 0, 0)
+    } 
+    else if (n < 0.77) {
+      mesh.position.set(feet.map(fxrand(), 0, 1, 2, 4), 0, 0)
+    }
+    else {
+    }
+	  scene.add(mesh);
+  }
+
+  //multiples - draw a circle and get points
+  else {
+    const elle = new THREE.EllipseCurve(0, 0, 10, 10, 0, Math.PI*2, false, 0)
+    const ellesPoints = elle.getPoints(feet.numShrooms)
+
+    //vairiable mushroom max sizes
+    let maxSize 
+    if (feet.numShrooms == 2) {
+      maxSize = 15
+    } 
+    else if (feet.numShrooms == 3) {
+      maxSize = 10
+    }
+    else {
+      maxSize = 7
+    }
+
+    //loopss
+    const obj = new THREE.Object3D()
+    for (let i = 0; i < feet.numShrooms; i++) {
+      
+      let mH = feet.map(fxrand(), 0, 1, 3, maxSize);
+	    let mW = feet.map(fxrand(), 0, 1, 5, maxSize)
+	    let gHF = feet.map(fxrand(), 0, 1, 0.15, 0.3)
+	    let gDF = feet.map(fxrand(), 0, 1, 0.1, 0.75)      
+	    const c = new MushroomCap(mW, mH, gHF, gDF, feet)
+	    const mesh = new THREE.Mesh(c.mergedBufferGeometry, toon)
+      mesh.position.set(ellesPoints[i].x, feet.map(fxrand(), 0, 1, -2, 9), ellesPoints[i].y)
+      //mesh.castShadow = true;
+      //mesh.receiveShadow = true;
+	    obj.add(mesh);
+    }
+    obj.rotateY(feet.map(fxrand(), 0, 1, -Math.PI, Math.PI))
+    scene.add(obj)
+  }
+
+  //shadow plane
+  const pg = new THREE.PlaneGeometry( 2000, 2000 );
+  pg.rotateX( - Math.PI / 2 );
+
+  const material = new THREE.ShadowMaterial();
+  material.opacity = 0.4;
+
+  const plane = new THREE.Mesh( pg, material );
+  plane.position.y = feet.numShrooms > 1 ? -20 : -30
+  plane.receiveShadow = true;
+  //scene.add( plane );
   
 
   //postporocessing stuff
@@ -143,7 +201,7 @@ function init() {
   renderer.autoClear = false;
 
   //animation controls and state
-  animateSkull = false;
+  firstAnimate = false;
   renderer.domElement.addEventListener( 'dblclick', toggleAutorotate);
 
   //set up resize listener and let it rip!
@@ -166,7 +224,7 @@ function initPostprocessing() {
     rotateG: feet.pattern.anglesVals.b,
     scatter: 0,
     blending: 0,
-    blendingMode: 2,
+    blendingMode: 4,
     greyscale: true,
     disable: false
   };
@@ -240,11 +298,17 @@ function render() {
 
   postprocessing.composer.render( scene, camera );
 
-  if(previewed == false && loaded == true){
+  if(previewed == false){
     fxpreview();
     previewed = true;
-    //download();
+    download();
   } 
+
+  const seconds = performance.now() / 2222 ;
+  if (seconds > 1 && !firstAnimate && !controls.autoRotate) {
+    controls.autoRotate = true;
+    firstAnimate = true
+  }
 
 }
 
@@ -254,7 +318,7 @@ function toggleAutorotate() {
 
 function download() {
   var link = document.createElement('a');
-  link.download = 'AcidWarning.png';
+  link.download = 'HatchedFungus.png';
   link.href = document.getElementById('hashish').toDataURL()
   link.click();
 }

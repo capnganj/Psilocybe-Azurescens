@@ -66,7 +66,7 @@ class MushroomCap {
         //lathers and tubers
         this.fungualBufferGeometry = new THREE.LatheBufferGeometry(allPts, 100);
 
-        this.stemBufferGeometry = new THREE.TubeBufferGeometry(this.stemCrv, 100, this.capWidth * 0.15, 50, false);
+        this.stemBufferGeometry = new THREE.TubeBufferGeometry(this.stemCrv, 100, this.capWidth * 0.23, 50, false);
 
         //this works!  Clean up so only one geometry needs to be managed 
         const mergedGeometry = mergeBufferGeometries([this.fungualBufferGeometry, this.stemBufferGeometry], false)
