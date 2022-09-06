@@ -50,6 +50,7 @@ let loaded = false;
 
 //global vars 
 let controls, renderer, scene, camera, firstAnimate;
+let rendererDiv, outerDiv, innerDiv;
 let postprocessing = {selectedObjects: []}
 init();
 
@@ -69,15 +70,34 @@ function init() {
   //renderer
   let w = computeCanvasSize()
   renderer.setPixelRatio( w.w/w.h );
-  renderer.setSize( w.w, w.h );
+  renderer.setSize( w.w-(w.nearEdgeOffset*2), w.h-(w.nearEdgeOffset*2));
   renderer.shadowMap.enabled = true;
-  renderer.domElement.id = "hashish";
+  //renderer.domElement.id = "hashish";
+
+  //html container for renderer
+  //body setup
   document.body.style.backgroundColor = feet.background
   document.body.style.display = 'flex'
   document.body.style.justifyContent = 'center'
   document.body.style.alignItems = 'center'
-  renderer.domElement.style.paddingTop = w.topPadding.toString() + 'px'
-  document.body.appendChild( renderer.domElement );
+  document.body.style.height = window.innerHeight.toString() + 'px'
+  //picture frame divs
+  outerDiv = document.createElement('div')
+  outerDiv.style.backgroundColor = 'white'
+  document.body.appendChild(outerDiv)
+  outerDiv.id = "hashish"
+
+  innerDiv = document.createElement('div')
+  innerDiv.style.padding = (w.nearEdgeOffset*0.66).toString() + 'px'
+  outerDiv.appendChild(innerDiv)
+
+  //renderer in frame
+  renderer.domElement.style.padding = (w.nearEdgeOffset*0.33).toString() + 'px'
+  renderer.domElement.style.borderStyle = 'solid'
+  renderer.domElement.style.borderColor = 'rgb(150,150,150)'
+  renderer.domElement.style.borderWidth = '1px'
+  innerDiv.appendChild( renderer.domElement )
+  rendererDiv = renderer.domElement
 
   //camera and orbit controls
   camera = new THREE.PerspectiveCamera( 60, w.w / w.h, 0.01, 100 );
@@ -247,16 +267,16 @@ function computeCanvasSize() {
   const ww = window.innerWidth;
   const wh = window.innerHeight;
 
-  const smallEdgeSize = ((ww + wh)/2) * 0.02
+  const smallEdgeSize = ((ww + wh)/2) * 0.03
 
   //return object to populate
   const ret = {}
 
-  //we want to draw a horizontal golden rectangle with a border, as big as possible
+  //we want to draw a rectangle with a border, as big as possible
   //does the horizontal dimension drive, or vertical
   if ( ww/wh >= 1 ) {
     //window is wide - let height drive
-    ret.h = Math.round(wh - (smallEdgeSize * 2.5));
+    ret.h = Math.round(wh - (smallEdgeSize * 2));
     ret.w = Math.round(ret.h);
   } else {
     //window is tall - let width drive
@@ -266,6 +286,7 @@ function computeCanvasSize() {
 
   
   ret.topPadding = (wh/2) - (ret.h/2)
+  ret.nearEdgeOffset = smallEdgeSize
 
   return ret;
 }
@@ -279,10 +300,11 @@ function onWindowResize() {
   camera.aspect = w.w / w.h;
   camera.updateProjectionMatrix();
   renderer.setPixelRatio( w.w / w.h);
-  renderer.setSize( w.w, w.h );
-
-  renderer.domElement.style.paddingTop = w.topPadding.toString() + 'px'
-
+  
+  document.body.style.height = window.innerHeight.toString() + 'px'
+  renderer.setSize( w.w-(w.nearEdgeOffset*2), w.h-(w.nearEdgeOffset*2));
+  innerDiv.style.padding = (w.nearEdgeOffset*0.66).toString() + 'px'
+  renderer.domElement.style.padding = (w.nearEdgeOffset*0.33).toString() + 'px'
 }
 
 function animate() {

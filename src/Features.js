@@ -1,6 +1,4 @@
-import { interpolateYlOrRd, interpolateInferno, interpolateMagma, interpolatePuBuGn, interpolatePlasma, interpolateRdPu, interpolateViridis, interpolateCividis, interpolateYlGnBu, interpolateYlGn, interpolateYlOrBr, interpolateCool, interpolateWarm, interpolateSinebow, interpolateRainbow } from 'd3-scale-chromatic'
-import { rgb, hsl, color } from 'd3-color';
-import * as THREE from 'three';
+import { rgb } from 'd3-color';
 
 class Features {
     constructor() {

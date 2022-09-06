@@ -51,7 +51,7 @@ class MushroomCap {
         this.inset = this.feet.map(fxrand(), 0, 1, -4.2, 4.2);
         this.stemCrv = new THREE.CubicBezierCurve3(
             new THREE.Vector3(0, 0, 0),
-            new THREE.Vector3(0, -5.0, 0),
+            new THREE.Vector3(0, -10.0, 0),
             new THREE.Vector3(this.inset, -20, this.inset),
             new THREE.Vector3(this.inset, -30, this.inset)
         );
