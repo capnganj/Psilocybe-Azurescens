@@ -68,8 +68,8 @@ class Features {
         else {
             this.pattern.anglesTag = "Random"
             this.pattern.anglesVals.r = this.map(fxrand(), 0, 1, -Math.PI/2, Math.PI/2)
-            this.pattern.anglesVals.g = this.map(fxrand(), 0, 1, -Math.PI/4, Math.PI/4)
-            this.pattern.anglesVals.b = this.map(fxrand(), 0, 1, -Math.PI/8, Math.PI/8)
+            this.pattern.anglesVals.g = this.map(fxrand(), 0, 1, -Math.PI/2, Math.PI/2)
+            this.pattern.anglesVals.b = this.map(fxrand(), 0, 1, -Math.PI/2, Math.PI/2)
         }
     }
 
@@ -118,16 +118,16 @@ class Features {
     setNumShrooms(){
         const n = fxrand()
         if (n < 0.618) {
-            this.numShrooms = 1
+            this.numShrooms = 2
         } 
         else if (n < 0.789) {
-            this.numShrooms = 2
-        }
-        else if (n < 0.895) {
             this.numShrooms = 3
         }
-        else {
+        else if (n < 0.895) {
             this.numShrooms = 5
+        }
+        else {
+            this.numShrooms = 7
         }
 
         if (this.numShrooms >= 3 && this.pattern.sizeTag == "Larger") {

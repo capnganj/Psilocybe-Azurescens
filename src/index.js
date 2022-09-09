@@ -22,10 +22,10 @@ window.$fxhashFeatures = {
   // "Palette" : feet.color.inverted ? feet.color.name + " Invert" : feet.color.name,
   // "Scatter": feet.pattern.scatterTag,
    "Pattern Size" : feet.pattern.sizeTag,
-   "Pattern" : feet.pattern.anglesTag,
+   "Hatch Pattern" : feet.pattern.anglesTag,
    "Sunlight" : feet.lightsAndCamera.lightsTag,
    "Camera": feet.lightsAndCamera.cameraTag,
-   "Number": feet.numShrooms.toString()
+   "Mushrooms": feet.numShrooms.toString()
 };
 console.log(window.$fxhashFeatures);
 //console.log(feet);
@@ -33,7 +33,6 @@ console.log(window.$fxhashFeatures);
 //vars related to fxhash preview call
 //previewed tracks whether preview has been called
 let previewed = false;
-let loaded = false;
 
 //from fxhash webpack boilerplate
 // these are the variables you can use as inputs to your algorithms
@@ -72,7 +71,7 @@ function init() {
   renderer.setPixelRatio( w.w/w.h );
   renderer.setSize( w.w-(w.nearEdgeOffset*2), w.h-(w.nearEdgeOffset*2));
   renderer.shadowMap.enabled = true;
-  //renderer.domElement.id = "hashish";
+  renderer.domElement.id = "hashish";
 
   //html container for renderer
   //body setup
@@ -85,7 +84,7 @@ function init() {
   outerDiv = document.createElement('div')
   outerDiv.style.backgroundColor = 'white'
   document.body.appendChild(outerDiv)
-  outerDiv.id = "hashish"
+  outerDiv.id = "outerHashish"
 
   innerDiv = document.createElement('div')
   innerDiv.style.padding = (w.nearEdgeOffset*0.66).toString() + 'px'
@@ -144,32 +143,11 @@ function init() {
     gradientMap: gradientMap
   });
 
-  //single mushroom geometry
-  if (feet.numShrooms == 1) {
-	  let mH = feet.map(fxrand(), 0, 1, 10, 19);
-	  let mW = feet.map(fxrand(), 0, 1, 10, 15)
-	  let gHF = feet.map(fxrand(), 0, 1, 0.15, 0.3)
-	  let gDF = feet.map(fxrand(), 0, 1, 0.1, 0.75)      
-	  const c = new MushroomCap(mW, mH, gHF, gDF, feet)
-	  const mesh = new THREE.Mesh(c.mergedBufferGeometry, toon)
-    //mesh.castShadow = true;
-
-    //nudges off center
-    const n = fxrand()
-    if (n < 0.37) {
-      mesh.position.set(feet.map(fxrand(), 0, 1, -2, -4), 0, 0)
-    } 
-    else if (n < 0.77) {
-      mesh.position.set(feet.map(fxrand(), 0, 1, 2, 4), 0, 0)
-    }
-    else {
-    }
-	  scene.add(mesh);
-  }
-
   //multiples - draw a circle and get points
-  else {
-    const elle = new THREE.EllipseCurve(0, 0, 10, 10, 0, Math.PI*2, false, 0)
+
+    const rad = feet.numShrooms < 4 ? 10 : 13
+  
+    const elle = new THREE.EllipseCurve(0, 0, rad, rad, 0, Math.PI*2, false, 0)
     const ellesPoints = elle.getPoints(feet.numShrooms)
 
     //vairiable mushroom max sizes
@@ -180,8 +158,11 @@ function init() {
     else if (feet.numShrooms == 3) {
       maxSize = 10
     }
+    else if (feet.numShrooms == 5) {
+      maxSize = 8
+    }
     else {
-      maxSize = 7
+      maxSize = 6
     }
 
     //loopss
@@ -201,19 +182,8 @@ function init() {
     }
     obj.rotateY(feet.map(fxrand(), 0, 1, -Math.PI, Math.PI))
     scene.add(obj)
-  }
+  
 
-  //shadow plane
-  const pg = new THREE.PlaneGeometry( 2000, 2000 );
-  pg.rotateX( - Math.PI / 2 );
-
-  const material = new THREE.ShadowMaterial();
-  material.opacity = 0.4;
-
-  const plane = new THREE.Mesh( pg, material );
-  plane.position.y = feet.numShrooms > 1 ? -20 : -30
-  plane.receiveShadow = true;
-  //scene.add( plane );
   
 
   //postporocessing stuff
