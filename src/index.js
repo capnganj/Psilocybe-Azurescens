@@ -10,6 +10,10 @@ import { MushroomCap } from './MushroomCap';
 import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer';
 import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass';
 import { HalftonePass } from 'three/examples/jsm/postprocessing/HalftonePass';
+import { ShaderPass } from 'three/examples/jsm/postprocessing/ShaderPass';
+import { OutlinePass } from 'three/examples/jsm/postprocessing/OutlinePass';
+import { MaskPass, ClearMaskPass } from 'three/examples/jsm/postprocessing/MaskPass.js';
+import { CopyShader } from 'three/examples/jsm/shaders/CopyShader';
 
 
 //1) - generate fxhash features - global driving parameters
@@ -19,10 +23,11 @@ window.$fxhashData = feet;
 
 // FX Features
 window.$fxhashFeatures = {
-  // "Palette" : feet.color.inverted ? feet.color.name + " Invert" : feet.color.name,
+   "Palette" : feet.color.inverted ? feet.color.name + " Invert" : feet.color.name,
   // "Scatter": feet.pattern.scatterTag,
    "Pattern Size" : feet.pattern.sizeTag,
    "Hatch Pattern" : feet.pattern.anglesTag,
+   "Background": feet.background.tag,
    "Sunlight" : feet.lightsAndCamera.lightsTag,
    "Camera": feet.lightsAndCamera.cameraTag,
    "Mushrooms": feet.numShrooms.toString()
@@ -48,18 +53,18 @@ let previewed = false;
 
 
 //global vars 
-let controls, renderer, scene, camera, firstAnimate;
-let rendererDiv, outerDiv, innerDiv;
+let controls, renderer, scene, camera, firstAnimate
+let outerDiv, innerDiv
 let postprocessing = {selectedObjects: []}
 init();
 
 function init() {
   //scene & camera
   scene = new THREE.Scene();
-  const sCol = new THREE.Color(0.62,0.62,0.62);
+  const sCol = new THREE.Color(feet.background.value.r/255, feet.background.value.g/255, feet.background.value.b/255);
   scene.background = sCol;
   //scene.background
-  scene.fog = new THREE.Fog(sCol, 20, 60)
+  scene.fog = new THREE.Fog(sCol, 20, 70)
 
   renderer = new THREE.WebGLRenderer( { 
     antialias: true,
@@ -68,35 +73,37 @@ function init() {
 
   //renderer
   let w = computeCanvasSize()
-  renderer.setPixelRatio( w.w/w.h );
-  renderer.setSize( w.w-(w.nearEdgeOffset*2), w.h-(w.nearEdgeOffset*2));
+  
+  renderer.setSize( w.w, w.h);
+  renderer.setPixelRatio( window.devicePixelRatio );
   renderer.shadowMap.enabled = true;
   renderer.domElement.id = "hashish";
-
-  //html container for renderer
-  //body setup
-  document.body.style.backgroundColor = feet.background
+  //renderer.domElement.style.backgroundColor = feet.background.value
+  document.body.style.backgroundColor = 'rgb(5,5,5)'
   document.body.style.display = 'flex'
   document.body.style.justifyContent = 'center'
   document.body.style.alignItems = 'center'
   document.body.style.height = window.innerHeight.toString() + 'px'
-  //picture frame divs
+
   outerDiv = document.createElement('div')
-  outerDiv.style.backgroundColor = 'white'
+  outerDiv.style.backgroundColor = feet.background.value
+  outerDiv.style.display = 'flex'
+  outerDiv.style.justifyContent = 'center'
+  //outerDiv.style.boxShadow = '3px 3px 15px black'
+  //outerDiv.style.alignItems = 'center'
+  outerDiv.style.height = w.h.toString() + 'px'
+  outerDiv.style.width = w.w.toString() + 'px'
   document.body.appendChild(outerDiv)
-  outerDiv.id = "outerHashish"
 
   innerDiv = document.createElement('div')
-  innerDiv.style.padding = (w.nearEdgeOffset*0.66).toString() + 'px'
   outerDiv.appendChild(innerDiv)
 
   //renderer in frame
-  renderer.domElement.style.padding = (w.nearEdgeOffset*0.33).toString() + 'px'
-  renderer.domElement.style.borderStyle = 'solid'
-  renderer.domElement.style.borderColor = 'rgb(150,150,150)'
-  renderer.domElement.style.borderWidth = '1px'
+  //renderer.domElement.style.marginTop = w.nearEdgeOffset.toString() + 'px'
+  //renderer.domElement.style.borderStyle = 'solid'
+  //renderer.domElement.style.borderColor = feet.invertColor(feet.background.value)
+  //renderer.domElement.style.borderWidth = '1px'
   innerDiv.appendChild( renderer.domElement )
-  rendererDiv = renderer.domElement
 
   //camera and orbit controls
   camera = new THREE.PerspectiveCamera( 60, w.w / w.h, 0.01, 100 );
@@ -113,35 +120,57 @@ function init() {
 
   //lights
   const p1 = new THREE.DirectionalLight( );
-  p1.intensity = 0.6
-  p1.position.set( feet.lightsAndCamera.lightsVal, 30, 15);
+  p1.intensity = 0.4
+  p1.position.set( feet.lightsAndCamera.lightsVal, 15, 15);
   p1.castShadow = true;
   p1.shadow.mapSize.width = 2048;
   p1.shadow.mapSize.height = 2048;
-  const d = 90;
+  const d = 15;
   p1.shadow.camera.left = -d;
   p1.shadow.camera.right = d;
   p1.shadow.camera.top = d;
   p1.shadow.camera.bottom = -d;
-  p1.shadow.camera.near = 1
   p1.shadow.camera.far = 1000;
   scene.add(p1);
 
+  //light colors
+  const p3Col = feet.interpolateFn(0.15);
+  const p4Col = feet.interpolateFn(0.66);
+  const p5Col = feet.interpolateFn(0.33);
+  const p6Col = feet.interpolateFn(0.85);
+  
+  const p3 = new THREE.DirectionalLight(
+    new THREE.Color(p3Col.r/255, p3Col.g/255, p3Col.b/255),
+    0.5
+  )
+  p3.position.set(10,1,10);
+  const p4 = new THREE.DirectionalLight(
+    new THREE.Color(p4Col.r/255, p4Col.g/255, p4Col.b/255),
+    0.5
+  )
+  p4.position.set(10,1,-10);
+  const p5 = new THREE.DirectionalLight(
+    new THREE.Color(p5Col.r/255, p5Col.g/255, p5Col.b/255),
+    0.5
+  )
+  p5.position.set(-10,-1,-10);
+  const p6 = new THREE.DirectionalLight(
+    new THREE.Color(p6Col.r/255, p6Col.g/255, p6Col.b/255),
+    0.5
+  )
+  p6.position.set(-10,-1,10);
+  
+  scene.add(p3);
+  scene.add(p4);
+  scene.add(p5);
+  scene.add(p6);
+  
+  const amb = new THREE.AmbientLight( 0xffffff, 0.4);
+  //scene.add(amb);
+
 
   //geometry and materials
-
-  //toon material 
-  const format = ( renderer.capabilities.isWebGL2 ) ? THREE.RedFormat : THREE.LuminanceFormat;
-  const colors = new Uint8Array(15);
-  for (let c = 0; c < colors.length; c++) {
-    colors[c] = (c/colors.length) * 256;
-  }
-  const gradientMap = new THREE.DataTexture(colors, colors.length, 1, format);
-  gradientMap.needsUpdate = true;
-  const toon = new THREE.MeshToonMaterial({
-    color: new THREE.Color(),
-    gradientMap: gradientMap
-  });
+  const toon = new THREE.MeshStandardMaterial();
 
   //multiples - draw a circle and get points
 
@@ -208,27 +237,41 @@ function initPostprocessing() {
   //halftone
   const params = {
     shape: 3, 
-    radius: feet.pattern.sizeVal,
+    radius: sizer.nearEdgeOffset * feet.pattern.sizeVal,
     rotateR: feet.pattern.anglesVals.r , // all could be features...
     rotateB: feet.pattern.anglesVals.g,
     rotateG: feet.pattern.anglesVals.b,
     scatter: 0,
-    blending: 0,
+    blending: 0.1,
     blendingMode: 4,
-    greyscale: true,
+    greyscale: false,
     disable: false
-  };
+  }
   const halftonePass = new HalftonePass(sizer.w, sizer.h, params)
   
+  const maskPass = new MaskPass( scene, camera )
+  const clearMaskPass = new ClearMaskPass()
+  const outputPass = new ShaderPass ( CopyShader );
 
-  const composer = new EffectComposer( renderer );
+  const parameters = {
+    stencilBuffer: true
+  }
+
+  const renderTarget = new THREE.WebGLRenderTarget( sizer.w, sizer.h, parameters );
+
+  const composer = new EffectComposer( renderer , renderTarget);
 
   //render
   composer.addPass(renderPass);
+  //mask
+  //composer.addPass(maskPass)
   //halftone pass
   composer.addPass(halftonePass)
+  //composer.addPass(clearMaskPass)
+  composer.addPass(outputPass)
 
   postprocessing.composer = composer;
+  postprocessing.halftonePass = halftonePass;
 }
 
 function computeCanvasSize() {
@@ -237,7 +280,7 @@ function computeCanvasSize() {
   const ww = window.innerWidth;
   const wh = window.innerHeight;
 
-  const smallEdgeSize = ((ww + wh)/2) * 0.03
+  let smallEdgeSize = ((ww + wh)/2) * 0.02
 
   //return object to populate
   const ret = {}
@@ -246,16 +289,17 @@ function computeCanvasSize() {
   //does the horizontal dimension drive, or vertical
   if ( ww/wh >= 1 ) {
     //window is wide - let height drive
-    ret.h = Math.round(wh - (smallEdgeSize * 2));
-    ret.w = Math.round(ret.h);
+    ret.h = Math.round(wh);
+    ret.w = Math.round(ret.h * 1 );
   } else {
     //window is tall - let width drive
-    ret.w = Math.round(ww - (smallEdgeSize * 2));
-    ret.h = Math.round(ret.w);
+    ret.w = Math.round(ww);
+    ret.h = Math.round(ret.w / 1 );
   }
 
+  //smallEdgeSize = ret.w * 0.02
   
-  ret.topPadding = (wh/2) - (ret.h/2)
+  ret.topPadding = wh/2
   ret.nearEdgeOffset = smallEdgeSize
 
   return ret;
@@ -265,16 +309,19 @@ function computeCanvasSize() {
 // threejs animation stuff
 function onWindowResize() {
 
+  //snag size
   let w = computeCanvasSize();
 
+  //update camera, renderer
   camera.aspect = w.w / w.h;
   camera.updateProjectionMatrix();
-  renderer.setPixelRatio( w.w / w.h);
-  
+  renderer.setPixelRatio( window.devicePixelRatio);
+  renderer.setSize( w.w, w.h);
+
+  //html updates
   document.body.style.height = window.innerHeight.toString() + 'px'
-  renderer.setSize( w.w-(w.nearEdgeOffset*2), w.h-(w.nearEdgeOffset*2));
-  innerDiv.style.padding = (w.nearEdgeOffset*0.66).toString() + 'px'
-  renderer.domElement.style.padding = (w.nearEdgeOffset*0.33).toString() + 'px'
+  outerDiv.style.height = w.h.toString() + 'px'
+  outerDiv.style.width = w.w.toString() + 'px'
 }
 
 function animate() {
@@ -296,7 +343,7 @@ function render() {
     download();
   } 
 
-  const seconds = performance.now() / 2222 ;
+  const seconds = performance.now() / 7777 ;
   if (seconds > 1 && !firstAnimate && !controls.autoRotate) {
     controls.autoRotate = true;
     firstAnimate = true
