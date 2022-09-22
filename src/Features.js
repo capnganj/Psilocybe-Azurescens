@@ -170,28 +170,22 @@ class Features {
     //set color palette globally
     setColorPalette() {
         let c = fxrand();
-        if (c < 0.09) { 
+        if (c < 0.16) { 
             this.color.name = "Rainbow"
         }
-        else if (c < 0.17) { 
-            this.color.name = "Rdpu"
-        }
-        else if (c < 0.25) {  
+        else if (c < 0.24) {  
             this.color.name = "Sinebow"
         }
-        else if (c < 0.32) { 
-            this.color.name = "Ylgnbu"
-        }
-        else if (c < 0.41) { 
+        else if (c < 0.49) { 
             this.color.name = "Viridis" 
         }
-        else if (c < 0.55) {  
+        else if (c < 0.57) {  
             this.color.name = "Inferno" 
         }
-        else if (c < 0.66) {  
+        else if (c < 0.69) {  
             this.color.name = "Plasma" 
         }
-        else if (c < 0.78) {  
+        else if (c < 0.81) {  
             this.color.name = "Cool" 
         }
         else if (c < 0.92) {  
@@ -202,28 +196,16 @@ class Features {
         }
 
         //inverted?
-        if( fxrand() > 0.666 ) {
+        if( fxrand() > 0.333 ) {
             this.color.inverted = true;
         }
     }
 
     setBackground() {
         let b = fxrand();
-        if (b < 0.11) {
-            this.background.tag = "Rolling Paper";
-            this.background.value = rgb(235, 213, 179);
-        }
-        else if (b < 0.28) {
+        if (b < 0.07) {
             this.background.tag = "fxhash Dark";
             this.background.value = rgb(38, 38, 38);
-        }
-        else if (b < 0.39) {
-            this.background.tag = "Newspaper";
-            this.background.value = rgb(245, 242, 232);
-        }
-        else if (b < 0.47) {
-            this.background.tag = "Brown Paper Bag";
-            this.background.value = rgb(181, 155, 124);
         }
         else if (b < 0.64) {
             this.background.tag = "Palette Light";
@@ -245,17 +227,17 @@ class Features {
 
         //size
         const s = fxrand();
-        if (s < 0.08) {
+        if (s < 0.05) {
             this.pattern.sizeTag = "Smaller"
-            this.pattern.sizeVal = this.map(fxrand(), 0, 1, 0.33, 0.55 )
+            this.pattern.sizeVal = this.map(fxrand(), 0, 1, 0.55, 0.77 )
         }
-        else if (s < 0.83) {
+        else if (s < 0.66) {
             this.pattern.sizeTag = "Standard"
-            this.pattern.sizeVal = this.map(fxrand(), 0, 1, 0.66, 0.77 )
+            this.pattern.sizeVal = this.map(fxrand(), 0, 1, 0.88, 1.1 )
         } 
         else {
             this.pattern.sizeTag = "Larger"
-            this.pattern.sizeVal = this.map(fxrand(), 0, 1, 0.78, 0.9 )
+            this.pattern.sizeVal = this.map(fxrand(), 0, 1, 1.3, 1.5 )
         }
 
         //angles
