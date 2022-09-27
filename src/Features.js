@@ -173,7 +173,7 @@ class Features {
         if (c < 0.16) { 
             this.color.name = "Rainbow"
         }
-        else if (c < 0.24) {  
+        else if (c < 0.34) {  
             this.color.name = "Sinebow"
         }
         else if (c < 0.49) { 
@@ -210,8 +210,8 @@ class Features {
         else if (b < 0.64) {
             this.background.tag = "Palette Light";
             let col = this.color.inverted ? 
-            this.interpolateFn(this.map(fxrand(), 0, 1, 0.66, 0.9)) : 
-            this.interpolateFn(this.map(fxrand(), 0, 1, 0.1, 0.33));
+            this.interpolateFn(this.map(fxrand(), 0, 1, 0.55, 0.8)) : 
+            this.interpolateFn(this.map(fxrand(), 0, 1, 0.2, 0.44));
             this.background.value = col;
         }
         else {
@@ -227,13 +227,13 @@ class Features {
 
         //size
         const s = fxrand();
-        if (s < 0.05) {
+        if (s < 0.03) {
             this.pattern.sizeTag = "Smaller"
-            this.pattern.sizeVal = this.map(fxrand(), 0, 1, 0.55, 0.77 )
+            this.pattern.sizeVal = this.map(fxrand(), 0, 1, 0.85, 0.92 )
         }
-        else if (s < 0.66) {
+        else if (s < 0.11) {
             this.pattern.sizeTag = "Standard"
-            this.pattern.sizeVal = this.map(fxrand(), 0, 1, 0.88, 1.1 )
+            this.pattern.sizeVal = this.map(fxrand(), 0, 1, 0.95, 1.2 )
         } 
         else {
             this.pattern.sizeTag = "Larger"
@@ -243,19 +243,19 @@ class Features {
         //angles
         const a = fxrand();
         const angle = this.map(fxrand(), 0, 1, Math.PI*0.2, Math.PI*0.8)
-        if (a < 0.32) {
+        if (a < 0.12) {
             this.pattern.anglesTag = "Grid"
             this.pattern.anglesVals.r = Math.round(fxrand()) ? 0 : Math.PI * 0.5
             this.pattern.anglesVals.g = Math.round(fxrand()) ? 0 : Math.PI * 0.5
             this.pattern.anglesVals.b = Math.round(fxrand()) ? 0 : Math.PI * 0.5
         }
-        else if (a < 0.66) {
+        else if (a < 0.27) {
             this.pattern.anglesTag = "Rotated Grid"
             this.pattern.anglesVals.r = Math.round(fxrand()) ? angle : angle + (Math.PI * 0.5)
             this.pattern.anglesVals.g = Math.round(fxrand()) ? angle : angle + (Math.PI * 0.5)
             this.pattern.anglesVals.b = Math.round(fxrand()) ? angle : angle + (Math.PI * 0.5)
         }
-        else if (a < 0.88) {
+        else if (a < 0.55) {
             this.pattern.anglesTag = "Mirrored"
             this.pattern.anglesVals.r = 0
             this.pattern.anglesVals.g = angle

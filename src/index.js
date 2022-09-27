@@ -10,10 +10,7 @@ import { MushroomCap } from './MushroomCap';
 import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer';
 import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass';
 import { HalftonePass } from 'three/examples/jsm/postprocessing/HalftonePass';
-import { ShaderPass } from 'three/examples/jsm/postprocessing/ShaderPass';
-import { OutlinePass } from 'three/examples/jsm/postprocessing/OutlinePass';
-import { MaskPass, ClearMaskPass } from 'three/examples/jsm/postprocessing/MaskPass.js';
-import { CopyShader } from 'three/examples/jsm/shaders/CopyShader';
+import { SMAAPass } from 'three/examples/jsm/postprocessing/SMAAPass';
 
 
 //1) - generate fxhash features - global driving parameters
@@ -248,27 +245,18 @@ function initPostprocessing() {
     disable: false
   }
   const halftonePass = new HalftonePass(sizer.w, sizer.h, params)
-  
-  const maskPass = new MaskPass( scene, camera )
-  const clearMaskPass = new ClearMaskPass()
-  const outputPass = new ShaderPass ( CopyShader );
 
-  const parameters = {
-    stencilBuffer: true
-  }
+  const smaa = new SMAAPass ( window.innerWidth * devicePixelRatio, window.innerHeight * devicePixelRatio );
 
-  const renderTarget = new THREE.WebGLRenderTarget( sizer.w, sizer.h, parameters );
 
-  const composer = new EffectComposer( renderer , renderTarget);
+  const composer = new EffectComposer( renderer );
 
   //render
   composer.addPass(renderPass);
-  //mask
-  //composer.addPass(maskPass)
-  //halftone pass
+  //halftones
   composer.addPass(halftonePass)
-  //composer.addPass(clearMaskPass)
-  composer.addPass(outputPass)
+  //anti alias
+  composer.addPass(smaa)
 
   postprocessing.composer = composer;
   postprocessing.halftonePass = halftonePass;
