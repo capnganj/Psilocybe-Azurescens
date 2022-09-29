@@ -6,6 +6,7 @@ import { Features } from './Features';
 import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 import { MushroomCap } from './MushroomCap';
+import Moon from './moon.png'
 
 import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer';
 import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass';
@@ -35,6 +36,7 @@ console.log(window.$fxhashFeatures);
 //vars related to fxhash preview call
 //previewed tracks whether preview has been called
 let previewed = false;
+let loaded = false;
 
 //from fxhash webpack boilerplate
 // these are the variables you can use as inputs to your algorithms
@@ -75,8 +77,7 @@ function init() {
   renderer.setPixelRatio( window.devicePixelRatio );
   renderer.shadowMap.enabled = true;
   renderer.domElement.id = "hashish";
-  //renderer.domElement.style.backgroundColor = feet.background.value
-  document.body.style.backgroundColor = 'rgb(5,5,5)'
+  document.body.style.backgroundColor = 'rgb(38,38,38)'
   document.body.style.display = 'flex'
   document.body.style.justifyContent = 'center'
   document.body.style.alignItems = 'center'
@@ -86,8 +87,6 @@ function init() {
   outerDiv.style.backgroundColor = feet.background.value
   outerDiv.style.display = 'flex'
   outerDiv.style.justifyContent = 'center'
-  //outerDiv.style.boxShadow = '3px 3px 15px black'
-  //outerDiv.style.alignItems = 'center'
   outerDiv.style.height = w.h.toString() + 'px'
   outerDiv.style.width = w.w.toString() + 'px'
   document.body.appendChild(outerDiv)
@@ -96,10 +95,6 @@ function init() {
   outerDiv.appendChild(innerDiv)
 
   //renderer in frame
-  //renderer.domElement.style.marginTop = w.nearEdgeOffset.toString() + 'px'
-  //renderer.domElement.style.borderStyle = 'solid'
-  //renderer.domElement.style.borderColor = feet.invertColor(feet.background.value)
-  //renderer.domElement.style.borderWidth = '1px'
   innerDiv.appendChild( renderer.domElement )
 
   //camera and orbit controls
@@ -168,6 +163,9 @@ function init() {
 
   //geometry and materials
   const toon = new THREE.MeshStandardMaterial();
+  const textureLoader = new THREE.TextureLoader()
+  const t = textureLoader.load(Moon, () => { loaded = true })
+  toon.map = t
 
   //multiples - draw a circle and get points
 
@@ -325,7 +323,7 @@ function render() {
 
   postprocessing.composer.render( scene, camera );
 
-  if(previewed == false){
+  if( !previewed && loaded){
     fxpreview();
     previewed = true;
     download();
