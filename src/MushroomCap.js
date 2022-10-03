@@ -36,7 +36,7 @@ class MushroomCap {
         this.capCurve = new THREE.CubicBezierCurve(
             new THREE.Vector2(this.capWidth  - this.lipWidth, 0),
             new THREE.Vector2(this.capWidth, 0),
-            new THREE.Vector2(this.capWidth*0.6, this.capHeight),
+            new THREE.Vector2(this.capWidth*0.666, this.capHeight),
             new THREE.Vector2(0.001, this.capHeight),
         )
 

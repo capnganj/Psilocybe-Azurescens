@@ -326,7 +326,7 @@ function render() {
   if( !previewed && loaded){
     fxpreview();
     previewed = true;
-    download();
+    //download();
   } 
 
   const seconds = performance.now() / 7777 ;
